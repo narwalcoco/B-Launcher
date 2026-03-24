@@ -142,20 +142,36 @@
       }
 
       function openBlank(url) {
-        let newTab = window.open('about:blank');
-        if (!newTab) return alert('Popup blocked, try again');
+  let newTab = window.open('about:blank');
+  if (!newTab) return alert('Popup blocked, try again');
 
-        newTab.document.write(`
+  newTab.document.write(`
     <html>
     <head>
       <title>New Tab</title>
+      <style>
+        html, body {
+          margin: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+        iframe {
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+      </style>
     </head>
-    <body style="margin:0">
-      <iframe src="${url}" style="border:none;width:100%;height:100%"></iframe>
+    <body>
+      <iframe src="${url}"></iframe>
     </body>
     </html>
   `);
-      }
+
+  // ✅ THIS LINE FIXES THE INFINITE LOADING
+  newTab.document.close();
+}
+
 
       // Particle Background
       const canvas = document.getElementById('bg');
