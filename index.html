@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B-Launcher</title>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Favicon (Lucide icon as SVG) -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M12 2L2 7l10 5 10-5-10-5zm0 7.2L5.2 7 12 4.8 18.8 7 12 9.2zM2 17l10 5 10-5v-6l-10 5-10-5v6z'/></svg>"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        overflow: hidden;
+        color: white;
+      }
+
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: #0b0f1a;
+      }
+
+      .container {
+        text-align: center;
+        padding: 50px;
+      }
+
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      button {
+        margin: 15px;
+        padding: 15px 25px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        backdrop-filter: blur(10px);
+        transition: 0.3s;
+      }
+
+      button:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.05);
+      }
+
+      .page {
+        display: none;
+      }
+      .active {
+        display: block;
+      }
+
+      .nav {
+        margin-top: 20px;
+      }
+
+      .disclaimer {
+        margin-top: 40px;
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="bg"></canvas>
+
+    <!-- Homepage -->
+    <div id="home" class="page active">
+      <div class="container">
+        <h1>B-Launcher</h1>
+        <button onclick="goToLaunch()">
+          <i data-lucide="rocket"></i>
+          Launch Apps
+        </button>
+
+        <div class="disclaimer">
+          We are NOT RESPONSIBLE if YOU get in trouble for accessing and using
+          this site. Use at one's own risk.<br />
+          Also note that if the about:blank tab gets blocked, just try again and
+          after after the second or third try, it should work.
+        </div>
+      </div>
+    </div>
+
+    <!-- Launcher Page -->
+    <div id="launch" class="page">
+      <div class="container">
+        <h1>Choose to:</h1>
+
+        <button onclick="openBlank('https://gn-math.dev/')">
+          <i data-lucide="calculator"></i>
+          Launch GN Math
+        </button>
+
+        <button
+          onclick="openBlank('https://unblocked-games.s3.amazonaws.com/index.html')"
+        >
+          <i data-lucide="gamepad-2"></i>
+          Launch FreezeNova
+        </button>
+
+        <div class="nav">
+          <button onclick="goHome()">Back</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function goToLaunch() {
+        document.getElementById('home').classList.remove('active');
+        document.getElementById('launch').classList.add('active');
+      }
+
+      function goHome() {
+        document.getElementById('launch').classList.remove('active');
+        document.getElementById('home').classList.add('active');
+      }
+
+      function openBlank(url) {
+        let newTab = window.open('about:blank');
+        if (!newTab) return alert('Popup blocked, try again');
+
+        newTab.document.write(`
+    <html>
+    <head>
+      <title>New Tab</title>
+    </head>
+    <body style="margin:0">
+      <iframe src="${url}" style="border:none;width:100%;height:100%"></iframe>
+    </body>
+    </html>
+  `);
+      }
+
+      // Particle Background
+      const canvas = document.getElementById('bg');
+      const ctx = canvas.getContext('2d');
+
+      let particles = [];
+      const count = 80;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: (Math.random() - 0.5) * 1.5,
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // draw particles
+        particles.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = 'white';
+          ctx.fill();
+        });
+
+        // connect lines
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(255,255,255,${1 - dist / 120})`;
+              ctx.stroke();
+            }
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
